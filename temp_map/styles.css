@@ -1,0 +1,12 @@
+.country {
+    stroke: #999;
+    stroke-width: 0.5px;
+  }
+
+.tooltip {
+    position: absolute;
+    background: white;
+    padding: 5px;
+    border: 1px solid #ccc;
+    pointer-events: none;
+}
