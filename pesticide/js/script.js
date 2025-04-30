@@ -2,9 +2,13 @@ function createVis(world, master_data) {
     const width = 975;
     const height = 610;
 
+    let currentYear = 2002
+
+    let countries;
+
     const zoom = d3.zoom()
-        .scaleExtent([0, 30])
-        .on("zoom", zoomed);
+            .scaleExtent([0, 30])
+            .on("zoom", zoomed);
 
     const svg = d3.select("#vis").append("svg")
         .attr("viewBox", [-50, -50, width + 50, height + 50])
@@ -23,30 +27,45 @@ function createVis(world, master_data) {
     const color = d3.scaleSequential(d3.interpolateOranges)
         .domain([0, highest_pest[1]])
 
-    filtered_data = master_data.filter(row => row.year == 2022)
-    console.log(filtered_data)
-    
-    const csvLookup = new Map();
-    filtered_data.forEach(row => {
-        csvLookup.set(row.country, row);  // Use first column as key
-    });
-
     const g = svg.append("g");
+        
+    function clicked(event, d) {
+        const [[x0, y0], [x1, y1]] = path.bounds(d);
+        event.stopPropagation();
+        subchart.style("opacity", "0%")
+        countries.transition().style("stroke-width", "0.1px");
+        svg.selectAll(".subchart_line").remove()
+        d3.select(this).transition().style("stroke-width", "1.5px").style("stroke", "steelblue");
+        svg.transition().duration(750).call(
+            zoom.transform,
+            d3.zoomIdentity
+            .translate(width / 2, height / 2)
+            .scale(Math.min(20, 0.9 / Math.max((x1 - x0) / width, (y1 - y0) / height)))
+            .translate(-(x0 + x1) / 2, -(y0 + y1) / 2),
+            d3.pointer(event, svg.node())
+        );
+        subchart_title.text(`Pesticide Usage over Time for ${d3.select(this).attr("country")}`)
+        subchart.transition().delay(750).duration(750).style("opacity", "100%")
+        makeSubchart(d3.select(this).attr("country"))
+    }
 
-    countries = g.selectAll("path")
-        .data(world.features)
-        .join("path")
-        .attr("d", path)
-        .attr("class", "country")
-        .attr("country", d => d.properties.name)
-        .attr("fill", d => {
-            const pesticide = csvLookup.get(d.properties.name);
-            return pesticide ? color(pesticide.pesticides_per_cropland) : "#eee";
-        })
-        .attr("stroke-linejoin", "round")
-        .attr("stroke", "black")
-        .attr("stroke-width", "0.1px")
-        .on("click", clicked)
+    svg.call(zoom)
+
+    function zoomed(event) {
+        const {transform} = event;
+        g.attr("transform", transform);
+        g.attr("stroke-width", 1 / transform.k);
+    }
+
+    function reset() {
+        countries.transition().style("stroke-width", "0.1px");
+        svg.transition().duration(750).call(
+            zoom.transform,
+            d3.zoomIdentity,
+            d3.zoomTransform(svg.node()).invert([width / 2, height / 2]),
+        );
+        subchart.transition().duration(750).style("opacity", "0%")
+    }
 
     const subchart = svg.append("g").style("pointer-events", "none").style("opacity", "0%")
 
@@ -66,14 +85,16 @@ function createVis(world, master_data) {
 
     subchart_yScale = d3.scaleLinear()
         .domain([highest_pest[1], highest_pest[0]])
-        .range([height / 10, height * 0.7])
+        .range([height * 0.15, height * 0.7])
     subchart_yAxis = d3.axisLeft(subchart_yScale)
 
+    // X-axis
     subchart.append("g")
         .attr("class", "axis")
         .attr("transform", `translate(0,${height * 0.7})`) // Position at the bottom
         .call(subchart_xAxis)
     
+    // Y-axis
     subchart.append("g")
         .attr("class", "axis")
         .attr("transform", `translate(${width / 5}, 0)`)
@@ -111,35 +132,49 @@ function createVis(world, master_data) {
         .x(d => subchart_xScale(d.year))
         .y(d => subchart_yScale(d.pesticides_per_cropland))
 
-    function clicked(event, d) {
-        const [[x0, y0], [x1, y1]] = path.bounds(d);
-        event.stopPropagation();
-        subchart.style("opacity", "0%")
-        countries.transition().style("stroke-width", "0.1px");
-        svg.selectAll(".subchart_line").remove()
-        d3.select(this).transition().style("stroke-width", "1.5px").style("stroke", "steelblue");
-        svg.transition().duration(750).call(
-            zoom.transform,
-            d3.zoomIdentity
-            .translate(width / 2, height / 2)
-            .scale(Math.min(20, 0.9 / Math.max((x1 - x0) / width, (y1 - y0) / height)))
-            .translate(-(x0 + x1) / 2, -(y0 + y1) / 2),
-            d3.pointer(event, svg.node())
-        );
-        subchart_title.text(`Pesticide Usage over Time for ${d3.select(this).attr("country")}`)
-        subchart.transition().delay(750).duration(750).style("opacity", "100%")
-        makeSubchart(d3.select(this).attr("country"))
+    function updateHighlightBar() {
+
+        svg.selectAll(".highlight_bar").remove()
+        
+        subchart.append("rect")
+            .attr("class", "highlight_bar")
+            .style("opacity", "50%")
+            .attr("fill", "yellow")
+            .attr("y", height * 0.15)
+            .attr("x", subchart_xScale(currentYear - 0.5))
+            .attr("height", (height * 0.7) - (height * 0.15))
+            .attr("width", subchart_xScale(currentYear + 0.5) - subchart_xScale(currentYear - 0.5))
     }
 
-    function reset() {
-        countries.transition().style("stroke-width", "0.1px");
-        svg.transition().duration(750).call(
-            zoom.transform,
-            d3.zoomIdentity,
-            d3.zoomTransform(svg.node()).invert([width / 2, height / 2]),
-        );
-        subchart.transition().duration(750).style("opacity", "0%")
+    function updateCountries() {
+
+        filtered_data = master_data.filter(row => row.year == currentYear)
+    
+        const csvLookup = new Map();
+        filtered_data.forEach(row => {
+            csvLookup.set(row.country, row);  // Use first column as key
+        });
+
+        countries = g.selectAll("path")
+            .data(world.features)
+            .join("path")
+            .attr("d", path)
+            .attr("class", "country")
+            .attr("country", d => d.properties.name)
+            .attr("fill", d => {
+                const pesticide = csvLookup.get(d.properties.name);
+                return pesticide ? color(pesticide.pesticides_per_cropland) : "#eee";
+            })
+            .attr("stroke-linejoin", "round")
+            .attr("stroke", "black")
+            .attr("stroke-width", "0.1px")
+            .on("click", clicked);
+        
+        updateHighlightBar()
+    
     }
+
+    updateCountries()
 
     function makeSubchart(country) {
         let country_data = master_data.filter(d => d.country == country)
@@ -166,13 +201,27 @@ function createVis(world, master_data) {
         }
     }
 
-    svg.call(zoom)
-    
-    function zoomed(event) {
-        const {transform} = event;
-        g.attr("transform", transform);
-        g.attr("stroke-width", 1 / transform.k);
-    }
+    let slider = d3
+        .sliderHorizontal()
+        .min(d3.min(master_data.map(d => +d.year))) // setup the range
+        .max(d3.max(master_data.map(d => +d.year))) // setup the range
+        .step(1)
+        .width(width)  // Widen the slider if needed
+        .tickFormat(d3.format('d'))
+        .displayValue(false)
+        .default(currentYear)
+        .on('onchange', (val) => {
+            currentYear = +val // Update the year
+            updateCountries() // Refresh the chart
+        });
+
+        d3.select('#slider')
+        .append('svg')
+        .attr('width', width + 100)  // Adjust width if needed
+        .attr('height', 100)
+        .append('g')
+        .attr('transform', 'translate(30,30)')
+        .call(slider);
 
 }
 
