@@ -11,7 +11,12 @@ let cropData, world;
 // Load data
 Promise.all([
     d3.json("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson"),
-    d3.json("data.json")
+    d3.csv("data.csv", d => ({
+        area: d.area,
+        item: d.item,
+        year: +d.year,
+        production: +d.production
+      }))
 ]).then(([worldData, productionData]) => {
     world = worldData;
     cropData = productionData;
