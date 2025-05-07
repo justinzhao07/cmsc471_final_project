@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cropology</title>
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="temp_map/styles.css">
 </head>
 <body>
 
@@ -16,6 +17,11 @@
         <h2>Temperature Changes - A Global Disruptor</h2>
         <p>Rising temperatures are already reshaping agricultural landscapes. Some regions experience longer growing seasons, while others face heat stress and water scarcity. By visualizing global temperature anomalies alongside crop yields, we reveal hotspots where warming is strongly correlated with productivity decline—particularly in equatorial and semi-arid zones. These insights underscore the urgency of adaptive strategies like heat-tolerant crops and improved irrigation systems.</p>
         <div id="vis"></div> <!--  Will hold our visualization (SVG) --> 
+        <input type="range" min="1961" max="2024" step="1" value="1961" id="yearSlider" />
+        <span id="yearLabel">1961</span>
+        <br>
+        <div id="temp_tooltip" class="tooltip" style="display: none;"></div>
+        <svg id="temp_svg" width="960" height="600"></svg>
 
         <h2>Use of Pesticides</h2>
         <p>Pesticides play a dual role in agriculture—protecting crops from pests but potentially harming long-term soil health and ecosystems. Our visualization shows how pesticide usage has changed over time across regions and how it aligns with yield patterns. In some high-use countries, yields have stabilized, but others show diminishing returns, suggesting possible overuse or resistance. This calls for more balanced, targeted approaches to crop protection.</p>
@@ -36,6 +42,6 @@
     <script src="https://unpkg.com/d3-simple-slider"></script>
     <script src="js/script.js"></script>
     <script src="pesticide/js/script.js"></script>
-
+    <script src="temp_map/script.js"></script>
 </body>
 </html>
