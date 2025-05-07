@@ -24,3 +24,5 @@ Antarctica
 C\u00f4te d'Ivoire -> Ivory Coast
 Czechoslovakia -> Czech Republic
 Syrian Arab Republic -> Syria
+Brunei
+Somaliland
