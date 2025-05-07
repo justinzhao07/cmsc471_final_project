@@ -12,6 +12,6 @@ function createSvg(containerId) {
 }
 
 const svg1 = createSvg('#vis');
-const svg2 = createSvg('#vis2');
+// const svg2 = createSvg('#vis2');
 const svg3 = createSvg('#vis3');
 const svg4 = createSvg('#vis4');

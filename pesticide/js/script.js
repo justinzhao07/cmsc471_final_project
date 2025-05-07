@@ -10,7 +10,7 @@ function createVis(world, master_data) {
             .scaleExtent([0, 30])
             .on("zoom", zoomed);
 
-    const svg = d3.select("#vis").append("svg")
+    const svg = d3.select("#vis2").append("svg")
         .attr("viewBox", [-50, -50, width + 50, height + 50])
         .attr("width", width)
         .attr("height", height)
@@ -215,7 +215,7 @@ function createVis(world, master_data) {
             updateCountries() // Refresh the chart
         });
 
-        d3.select('#slider')
+        d3.select('#slider_pest')
         .append('svg')
         .attr('width', width + 100)  // Adjust width if needed
         .attr('height', 100)
@@ -229,10 +229,10 @@ function createVis(world, master_data) {
 async function init() {
     try {
         // Load geographic (map) data
-        let world = await d3.json("./data/world.geojson");
+        let world = await d3.json("./pesticide/data/world.geojson");
         
         // Load election results data
-        let pesticides_data = await d3.csv("./data/pesticides_clean.csv");
+        let pesticides_data = await d3.csv("./pesticide/data/pesticides_clean.csv");
         
         // Verify the loaded data in the console
         console.log('Map data:', world);
