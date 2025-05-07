@@ -19,11 +19,11 @@ const svg = d3.select("svg");
           .attr("class", "country")
           .attr("fill", d => {
             const temp = tempData[d.properties.name]?.["Y" + year];
-            return temp !== undefined ? color(temp) : "#eee";
+            return temp !== null ? color(temp) : "#A9A9A9";
           })
           .on("mouseover", function (event, d) {
             const temp = tempData[d.properties.name]?.["Y" + year];
-            if (temp !== undefined) {
+            if (temp !== null) {
               tooltip.style("display", "block")
                 .html(`<strong>${d.properties.name}</strong><br>Year: ${year}<br>Temp Change: ${temp.toFixed(2)}°C`);
             }

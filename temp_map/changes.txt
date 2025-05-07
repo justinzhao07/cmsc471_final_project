@@ -1,19 +1,28 @@
 Palestine -> West Bank
 Serbia and Montenegro -> Kosovo
-Russia
-Taiwan
-Laos
-Vietnam
-USA
-The Bahamas
-Congo
-Venezuela
-England
-Turkey
-Swaziland
-East Timor
-North Korea
-South Korea
-Republic of Serbia
-Netherlands
-Guinea Bissau
+Russian Federation -> Russia
+China, Taiwan Province of -> Taiwan
+Lao People's Democratic Republic - Laos
+Viet Nam -> Vietnam
+United States of America -> USA
+Bahamas -> The Bahamas
+Congo -> Republic of the Congo
+Venezuela (Bolivarian Republic of) -> Venezuela
+United Kingdom of Great Britain and Northern Ireland -> England
+Trkiye -> Turkey
+Eswatini -> Swaziland
+Timor-Leste -> East Timor
+Democratic People's Republic of Korea -> North Korea
+Republic of Korea -> South Korea
+Serbia -> Republic of Serbia
+Netherlands (Kingdom of the) -> Netherlands
+Guinea-Bissau -> Guinea Bissau
+Iran (Islamic Republic of) -> Iran
+Bolivia (Plurinational State of) -> Bolivia
+Falkland Islands
+Antarctica
+C\u00f4te d'Ivoire -> Ivory Coast
+Czechoslovakia -> Czech Republic
+Syrian Arab Republic -> Syria
+Brunei
+Somaliland
