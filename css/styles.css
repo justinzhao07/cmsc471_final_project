@@ -6,6 +6,15 @@
     line-height: 1.8;
 }
 
+p {
+    margin-bottom: 1rem;
+    font-size: 18px;
+}
+
+label {
+    font-weight: bold;
+}
+
 /* Container styling for layout */
 .container {
     max-width: 1200px;
