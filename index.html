@@ -16,7 +16,8 @@
 
         <h2>Temperature Changes - A Global Disruptor</h2>
         <p>Rising temperatures are already reshaping agricultural landscapes. Some regions experience longer growing seasons, while others face heat stress and water scarcity. By visualizing global temperature anomalies alongside crop yields, we reveal hotspots where warming is strongly correlated with productivity decline—particularly in equatorial and semi-arid zones. These insights underscore the urgency of adaptive strategies like heat-tolerant crops and improved irrigation systems.</p>
-        <div id="vis"></div> <!--  Will hold our visualization (SVG) --> 
+        <h2>Temperature Change Map 1961-2024</h2>
+        <!-- <div id="vis"></div> -->
         <input type="range" min="1961" max="2024" step="1" value="1961" id="yearSlider" />
         <span id="yearLabel">1961</span>
         <br>
@@ -34,7 +35,17 @@
 
         <h2>Overall Crop Yield</h2>
         <p>This interactive global map presents a spatial overview of crop yield performance over time. Users can explore country-level trends, compare different crops, and correlate yield patterns with climate and input variables. It reveals striking disparities: while some regions have seen steady improvements, others face stagnation or decline. The map serves as a powerful tool to identify both opportunity areas and regions at risk.</p>
-        <div id="vis4"></div>
+        <!-- <div id="vis4"></div> -->
+        <h2>Global Crop Production Map (in Tonnes)</h2>
+        <label for="crop">Crop:</label>
+        <select id="crop"></select>
+        <br>
+        <label for="year">Year:</label>
+        <input type="range" min="1961" max="2024" step="1" value="1961" id="year" />
+        <span id="year-label">1961</span>
+
+        <div id="crop_tooltip" class="tooltip" style="display: none;"></div>
+        <svg id="crop_map" width = "960" height = "600"></svg>
     </div>
 
     <!-- Load D3.js -->
@@ -43,5 +54,6 @@
     <script src="js/script.js"></script>
     <script src="pesticide/js/script.js"></script>
     <script src="temp_map/script.js"></script>
+    <script src="crop_map/script.js"></script>
 </body>
 </html>

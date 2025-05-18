@@ -4,7 +4,7 @@ const yearLabel = d3.select("#yearLabel");
 
 const projection = d3.geoNaturalEarth1();
 const path = d3.geoPath().projection(projection);
-const color = d3.scaleSequential(d3.interpolateRdBu).domain([2, -2]);
+const color = d3.scaleSequential(d3.interpolateRdBu).domain([3, -3]);
 
 // Load GeoJSON and temperature data
 Promise.all([
@@ -36,6 +36,49 @@ Promise.all([
       .on("mouseout", function () {
         tooltip.style("display", "none");
       });
+        // Legend setup
+  const legendWidth = 200;
+  const legendHeight = 10;
+
+  const defs = svg.append("defs");
+
+  const gradient = defs.append("linearGradient")
+    .attr("id", "temp-legend-gradient")
+    .attr("x1", "0%")
+    .attr("x2", "100%");
+
+  gradient.selectAll("stop")
+    .data([
+      { offset: "0%", color: color(3) },
+      { offset: "50%", color: color(0) },
+      { offset: "100%", color: color(-3) }
+    ])
+    .enter()
+    .append("stop")
+    .attr("offset", d => d.offset)
+    .attr("stop-color", d => d.color);
+
+  const legend = svg.append("g")
+    .attr("class", "legend")
+    .attr("transform", "translate(20, 300)");
+
+  legend.append("rect")
+    .attr("width", legendWidth)
+    .attr("height", legendHeight)
+    .style("fill", "url(#temp-legend-gradient)")
+    .style("stroke", "#000");
+
+  const legendScale = d3.scaleLinear()
+    .domain([3, -3])  // Note: descending domain since the color scale is RdBu
+    .range([0, legendWidth]);
+
+  const legendAxis = d3.axisBottom(legendScale)
+    .ticks(5)
+    .tickFormat(d => `${d}°C`);
+
+  legend.append("g")
+    .attr("transform", `translate(0, ${legendHeight})`)
+    .call(legendAxis);
   }
 
   // Initial render
