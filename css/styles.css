@@ -110,3 +110,10 @@ button:hover {
     justify-content: center;
     align-items: flex-start;
 }
+
+.data-source {
+    margin-bottom: 1rem;
+    font-size: 12px;
+    font-style: italic;
+    color: #404040;
+}
