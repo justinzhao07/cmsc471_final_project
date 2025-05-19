@@ -1,5 +1,5 @@
 let curHasData = false;
-let currentYear = 1990;
+let currentYear = 2000;
 
 function createVis(world, master_data) {
     const width = 975;

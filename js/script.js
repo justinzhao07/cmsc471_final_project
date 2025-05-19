@@ -2,7 +2,7 @@ const margin = { top: 40, right: 40, bottom: 40, left: 60 };
 const width = 1200;
 const height = 800;
 const sliderHeight = 600;
-const defaultYear = 1990;
+const defaultYear = 2000;
 
 // Pesticide data extent: 1990 - 2022
 

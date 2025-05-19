@@ -82,7 +82,7 @@ Promise.all([
   }
 
   // Initial render
-  updateMap(1990);
+  updateMap(2000);
 
   // Update on slider change
   // d3.select("#yearSlider").on("input", function () {

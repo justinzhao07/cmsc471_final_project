@@ -11,11 +11,15 @@ const zoom = d3.zoom()
             .scaleExtent([0.5, 30])
             .on("zoom", zoomed);
 const tooltip = d3.select("#crop_tooltip")
+const subchartTop = height * (3 / 16.0);
+const subchartBottom = height * (27 / 32.0);
+const diff = (subchartBottom - subchartTop) / 6.0;
+const boxplotStretch = diff / 2;
 
 const projection = d3.geoNaturalEarth1().scale(160).translate([width / 2, height / 2]);
 const path = d3.geoPath().projection(projection);
 
-let currentYear = 1990;
+let currentYear = 2000;
 let currentCountry = null;
 let subcharted = false;
 
@@ -37,9 +41,9 @@ Promise.all([
         production: +d.production
       })),
     d3.csv("pesticide/data/changes.csv", d => ({
-      country: d.area,
-      item: d.item,
-      year: +d.year,
+      country: d.Area,
+      item: d.Item,
+      year: +d.Year,
       tempChange: +d.tempChange,
       nitroChange: +d.nitroChange,
       phosphorusChange: +d.phosphorusChange,
@@ -51,6 +55,7 @@ Promise.all([
     world = worldData;
     cropData = productionData;
     changeData = changes;
+    console.log(changeData)
 
     // Populate crop dropdown
     // Calculate top 10 crops by total production
@@ -102,16 +107,9 @@ function initSubchart() {
         .attr("x", width / 2)
         .attr("y", height * 0.12)
         .attr("class", "labels")
-        .style("font-size", "24px")
+        .style("font-size", "18px")
         .style("font-weight", "bold")
         .text("Changes in Climate Indicators")
-
-  let subchartTop = height * (3 / 16.0);
-  console.log(subchartTop)
-  let subchartBottom = height * (27 / 32.0);
-  console.log(subchartBottom)
-  let diff = (subchartBottom - subchartTop) / 6.0;
-  console.log(diff)
 
   yieldChangeHeader = subchart.append("text")
       .attr("x", 30 + (width / 10))
@@ -163,11 +161,117 @@ function initSubchart() {
   
 }
 
-function updateSubchart(country, crop, year) {
-  
-  subchart_title.text(`Changes in Indicators for ${crop} in ${country}`)
+function getBoxplotMetrics(filtered, col) {
 
+  let varChanges = filtered.map(entry => entry[col])
+  varChanges = varChanges.filter(v => v != -999)
+
+  let sorted = varChanges.sort(d3.ascending)
+  let q1 = d3.quantile(sorted, 0.25)
+  let median = d3.quantile(sorted, 0.5)
+  let q3 = d3.quantile(sorted, 0.75)
+  let iqr = q3 - q1
+  let trueMin = d3.min(sorted)
+  let trueMax = d3.max(sorted)
+  let lowerWhisker = Math.max(q1 - 1.5 * iqr, trueMin)
+  let upperWhisker = Math.min(q3 + 1.5 * iqr, trueMax)
+
+  return {trueMin: trueMin, lowerWhisker: lowerWhisker, q1: q1, median: median, q3: q3, upperWhisker: upperWhisker, trueMax: trueMax}
+
+}
+
+function updateSubchart(country, crop, year) {
+
+  d3.selectAll(".boxplot").remove()
+  // d3.selectAll(".cutlines").remove()
   
+  subchart_title.text(`Changes in Indicators for ${crop} in ${country} in ${year}`)
+
+  filtered_data = changeData.filter(row => row.item == crop)
+  filtered_data = filtered_data.filter(row => row.country == country)
+  more_filtered_data = filtered_data.filter(row => row.year == year)
+
+  data_row = null
+  if (more_filtered_data.length > 0) {
+    data_row = more_filtered_data[0]
+  } else {
+    data_row = {country: country, item: crop, nitroChange: -999, pestChange: -999, phosphorusChange: -999, potassiumChange: -999, tempChange: -999, year: year, yieldChange: -999}
+  }
+
+
+  let colsToPlot = ["yieldChange", "tempChange", "pestChange", "nitroChange", "phosphorusChange", "potassiumChange"]
+  for (i = 0; i < 6; i++) {
+    
+    let horizontal = subchartTop + ((i + 0.5) * diff) - 5
+
+    if (data_row[colsToPlot[i]] != -999) {
+    
+      let boxplotMetrics = getBoxplotMetrics(filtered_data, colsToPlot[i])
+
+      let xScale = d3.scaleLinear()
+        .domain([boxplotMetrics.trueMin, boxplotMetrics.trueMax])
+        .range([30 + (width / 10), (width * (9 / 10)) - 30])
+
+      subchart.append("line")
+        .attr("class", "boxplot")
+        .attr("x1", xScale(boxplotMetrics.lowerWhisker))
+        .attr("x2", xScale(boxplotMetrics.upperWhisker))
+        .attr("y1", horizontal)
+        .attr("y2", horizontal)
+        .attr("stroke", "black")
+
+      subchart.append("rect")
+        .attr("class", "boxplot")
+        .attr("y", horizontal - boxplotStretch/2)
+        .attr("x", xScale(boxplotMetrics.q1))
+        .attr("height", boxplotStretch )
+        .attr("width", (xScale(boxplotMetrics.q3)-xScale(boxplotMetrics.q1)) )
+        .attr("stroke", "black")
+        .style("fill", "#4f4f4f")
+
+      subchart.selectAll(".cutlines")
+        .data([boxplotMetrics.lowerWhisker, boxplotMetrics.median, boxplotMetrics.upperWhisker])
+        .enter()
+        .append("line")
+          .attr("class", "boxplot")
+          .attr("y1", horizontal - boxplotStretch/2)
+          .attr("y2", horizontal + boxplotStretch/2)
+          .attr("x1", function(d){ return(xScale(d))} )
+          .attr("x2", function(d){ return(xScale(d))} )
+          .attr("stroke", "black")
+
+      subchart.append("circle")
+        .attr("class", "boxplot")
+        .attr("r", 5)
+        .attr("cx", xScale(data_row[colsToPlot[i]]))
+        .attr("cy", horizontal)
+        .attr("fill", "red")
+        .attr("stroke", "black")
+        .attr("stroke-width", "1px")
+
+      subchart.append("text")
+        .attr("class", "boxplot")
+        .attr("text-anchor", "middle")
+        .attr("x", xScale(data_row[colsToPlot[i]]))
+        .attr("y", horizontal + 20)
+        .style("font-size", "13px")
+        .style("font-weight", "bold")
+        .text(i != 1 ? (data_row[colsToPlot[i]] * 100).toFixed(2) + "%" : data_row[colsToPlot[i]].toFixed(2) + "°")
+
+
+    } else {
+      subchart.append("text")
+        .attr("class", "boxplot")
+        .attr("x", 30 + (width / 10))
+        .attr("y", horizontal)
+        .style("font-size", "11px")
+        .style("font-style", "italic")
+        .text("Not Available")
+    }
+
+    
+  }
+
   
 }
 
