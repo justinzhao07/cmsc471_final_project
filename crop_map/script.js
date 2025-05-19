@@ -227,7 +227,7 @@ function updateSubchart(country, crop, year) {
         .attr("height", boxplotStretch )
         .attr("width", (xScale(boxplotMetrics.q3)-xScale(boxplotMetrics.q1)) )
         .attr("stroke", "black")
-        .style("fill", "#4f4f4f")
+        .style("fill", "#9c9c9c")
 
       subchart.selectAll(".cutlines")
         .data([boxplotMetrics.lowerWhisker, boxplotMetrics.median, boxplotMetrics.upperWhisker])
