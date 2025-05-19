@@ -6,6 +6,7 @@ const svg = d3.select("#crop_map").append("svg")
                 .attr("viewBox", [-50, -50, width + 50, height + 50])
 const g = svg.append("g");
 const subchart = svg.append("g").style("pointer-events", "none").style("opacity", "0%")
+let subchart_title, yieldChangeHeader, nitroChangeHeader, phosphorusChangeHeader, potassiumChangeHeader, tempChangeHeader, pestChangeHeader;
 const zoom = d3.zoom()
             .scaleExtent([0.5, 30])
             .on("zoom", zoomed);
@@ -15,9 +16,10 @@ const projection = d3.geoNaturalEarth1().scale(160).translate([width / 2, height
 const path = d3.geoPath().projection(projection);
 
 let currentYear = 1990;
+let currentCountry = null;
 let subcharted = false;
 
-let cropData, world;
+let cropData, world, changeData;
 
 function zoomed(event) {
   const {transform} = event;
@@ -33,10 +35,22 @@ Promise.all([
         item: d.item,
         year: +d.year,
         production: +d.production
-      }))
-]).then(([worldData, productionData]) => {
+      })),
+    d3.csv("pesticide/data/changes.csv", d => ({
+      country: d.area,
+      item: d.item,
+      year: +d.year,
+      tempChange: +d.tempChange,
+      nitroChange: +d.nitroChange,
+      phosphorusChange: +d.phosphorusChange,
+      potassiumChange: +d.potassiumChange,
+      pestChange: +d.pestChange,
+      yieldChange: +d.yieldChange
+    }))
+]).then(([worldData, productionData, changes]) => {
     world = worldData;
     cropData = productionData;
+    changeData = changes;
 
     // Populate crop dropdown
     // Calculate top 10 crops by total production
@@ -65,6 +79,7 @@ Promise.all([
     //   updateMap();
     // });
 
+    initSubchart();
     updateMap();
     window.addEventListener("yearUpdate", function(e) {
       currentYear = e.detail;
@@ -72,8 +87,7 @@ Promise.all([
     })
 });
 
-function updateSubchart() {
-  
+function initSubchart() {
   subchart.append("rect")
         .attr("x", (width / 10))
         .attr("y", height / 20)
@@ -82,6 +96,78 @@ function updateSubchart() {
         .attr("fill", "#cccccc")
         .attr("stroke", "black")
         .attr("opacity", "70%")
+
+  subchart_title = subchart.append("text")
+        .attr("text-anchor", "middle")
+        .attr("x", width / 2)
+        .attr("y", height * 0.12)
+        .attr("class", "labels")
+        .style("font-size", "24px")
+        .style("font-weight", "bold")
+        .text("Changes in Climate Indicators")
+
+  let subchartTop = height * (3 / 16.0);
+  console.log(subchartTop)
+  let subchartBottom = height * (27 / 32.0);
+  console.log(subchartBottom)
+  let diff = (subchartBottom - subchartTop) / 6.0;
+  console.log(diff)
+
+  yieldChangeHeader = subchart.append("text")
+      .attr("x", 30 + (width / 10))
+      .attr("y", subchartTop + (0 * diff))
+      .attr("class", "labels")
+      .style("font-size", "13px")
+      .style("font-weight", "bold")
+      .text("Change in Crop Production from Previous Year")
+
+  tempChangeHeader = subchart.append("text")
+      .attr("x", 30 + (width / 10))
+      .attr("y", subchartTop + (1 * diff))
+      .attr("class", "labels")
+      .style("font-size", "13px")
+      .style("font-weight", "bold")
+      .text("Change in Temperature from Previous Year")
+
+  pestChangeHeader = subchart.append("text")
+      .attr("x", 30 + (width / 10))
+      .attr("y", subchartTop + (2 * diff))
+      .attr("class", "labels")
+      .style("font-size", "13px")
+      .style("font-weight", "bold")
+      .text("Change in Pesticide Usage from Previous Year")
+
+  nitroChangeHeader = subchart.append("text")
+      .attr("x", 30 + (width / 10))
+      .attr("y", subchartTop + (3 * diff))
+      .attr("class", "labels")
+      .style("font-size", "13px")
+      .style("font-weight", "bold")
+      .text("Change in Soil Nitrogen Level from Previous Year")
+
+  phosphorusChangeHeader = subchart.append("text")
+      .attr("x", 30 + (width / 10))
+      .attr("y", subchartTop + (4 * diff))
+      .attr("class", "labels")
+      .style("font-size", "13px")
+      .style("font-weight", "bold")
+      .text("Change in Soil Phosphorus Level from Previous Year")
+
+  potassiumChangeHeader = subchart.append("text")
+      .attr("x", 30 + (width / 10))
+      .attr("y", subchartTop + (5 * diff))
+      .attr("class", "labels")
+      .style("font-size", "13px")
+      .style("font-weight", "bold")
+      .text("Change in Soil Potassium Level from Previous Year")
+  
+}
+
+function updateSubchart(country, crop, year) {
+  
+  subchart_title.text(`Changes in Indicators for ${crop} in ${country}`)
+
+  
   
 }
 
@@ -135,6 +221,7 @@ function updateMap() {
     function clicked(event, d) {
         const [[x0, y0], [x1, y1]] = path.bounds(d);
         event.stopPropagation();
+        currentCountry = d.properties.name;
         // subchart.style("opacity", "0%")
         countries.transition().style("stroke-width", "0.1px");
         //svg.selectAll(".subchart_line").remove()
@@ -147,24 +234,30 @@ function updateMap() {
             .translate(-(x0 + x1) / 2, -(y0 + y1) / 2),
             d3.pointer(event, svg.node())
         );
-        //subchart_title.text(`Pesticide Usage over Time for ${d3.select(this).attr("country")}`)
-        //subchart.transition().delay(750).duration(750).style("opacity", "100%")
-        //makeSubchart(d3.select(this).attr("country"))
+        updateSubchart(currentCountry, d3.select("#crop").property("value"), currentYear)
+        if (!subcharted) {
+          subchart.transition().delay(750).duration(750).style("opacity", "100%")
+        }
+        subcharted = true;
+        tooltip.style("display", "none")
     }
 
     function reset() {
         console.log("SVG click")
         countries.transition().style("stroke-width", "0.1px");
+        subchart.transition().duration(750).style("opacity", "0%")
         svg.transition().duration(750).call(
             zoom.transform,
             d3.zoomIdentity,
             d3.zoomTransform(svg.node()).invert([width / 2, height / 2]),
         );
-        //subchart.transition().duration(750).style("opacity", "0%")
+        subcharted = false
+        currentCountry = null;
     }
 
-    updateSubchart();
-
+    if (currentCountry != null) {
+      updateSubchart(currentCountry, d3.select("#crop").property("value"), currentYear);
+    }
 
     svg.selectAll(".legend").remove();
 

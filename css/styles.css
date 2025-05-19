@@ -38,7 +38,7 @@ label {
     border: 1px solid #bbbbbb; /*otherwise you can't see this part*/
 }
 
-#vis4 svg {
+#crop_map svg {
     margin: 2rem 0;
     border: 1px solid #bbbbbb; /*otherwise you can't see this part*/
 }
@@ -98,6 +98,7 @@ button:hover {
     margin-left: -40px;
     position: relative;
     top: 400px;
+    z-index: -1;
 }
 
 #master_slider {
@@ -108,5 +109,4 @@ button:hover {
     flex-direction: column;
     justify-content: center;
     align-items: flex-start;
-    z-index: 1000;
 }
