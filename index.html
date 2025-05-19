@@ -10,53 +10,60 @@
 <body>
 
     <div id="tooltip" style="display:none"></div> 
-    <div class="container"> <!-- Centers content and sets max width -->
-        <h1>Cropology: Climate, Crops, and Consequences</h1>
-        <p>Climate change is one of the most pressing threats to global food security. As temperatures rise, precipitation patterns shift, and land quality evolves, understanding how these changes impact agricultural productivity is critical. In Cropology, we visualize the relationship between environmental stressors and crop yields worldwide, using historical data to uncover patterns and project future risks. Our aim is to inform policy, guide resource allocation, and empower more resilient farming systems.</p>
-        <br>
+    <div id="layout">
+        <div id="slider-container">
+            <div id="master_slider">
+                <p id="slider-year">Year: </p>
+            </div>
+        </div> 
+        <div class="container"> <!-- Centers content and sets max width -->
+            <h1>Cropology: Climate, Crops, and Consequences</h1>
+            <p>Climate change is one of the most pressing threats to global food security. As temperatures rise, precipitation patterns shift, and land quality evolves, understanding how these changes impact agricultural productivity is critical. In Cropology, we visualize the relationship between environmental stressors and crop yields worldwide, using historical data to uncover patterns and project future risks. Our aim is to inform policy, guide resource allocation, and empower more resilient farming systems.</p>
+            <br>
 
-        <h2>Temperature Changes - A Global Disruptor</h2>
-        <p>Rising temperatures are already reshaping agricultural landscapes. Some regions experience longer growing seasons, while others face heat stress and water scarcity. By visualizing global temperature anomalies alongside crop yields, we reveal hotspots where warming is strongly correlated with productivity decline—particularly in equatorial and semi-arid zones. These insights underscore the urgency of adaptive strategies like heat-tolerant crops and improved irrigation systems.</p>
-        <!-- <div id="vis"></div> -->
-        <label for="year">Year:</label>
-        <input type="range" min="1961" max="2024" step="1" value="1961" id="yearSlider" />
-        <span id="yearLabel">1961</span>
-        <br>
-        <div id="temp_tooltip" class="tooltip" style="display: none;"></div>
-        <svg id="temp_svg" width="960" height="600"></svg>
-        <br>
-        <p>Over the past several decades, global temperatures have shown a consistent upward trend. In our visualization, this is clearly reflected in the intensifying red hues across the timeline—each shade representing a growing deviation from historical averages. As the world warms, regions once considered temperate are experiencing unprecedented heat, with annual temperature anomalies becoming the new norm. This warming trend not only signals the growing impact of climate change but also poses direct threats to agricultural productivity, especially in heat-sensitive crop zones.</p>
-        <br>
+            <h2>Temperature Changes - A Global Disruptor</h2>
+            <p>Rising temperatures are already reshaping agricultural landscapes. Some regions experience longer growing seasons, while others face heat stress and water scarcity. By visualizing global temperature anomalies alongside crop yields, we reveal hotspots where warming is strongly correlated with productivity decline—particularly in equatorial and semi-arid zones. These insights underscore the urgency of adaptive strategies like heat-tolerant crops and improved irrigation systems.</p>
+            <!-- <div id="vis"></div> -->
+            <!-- <label for="year">Year:</label>
+            <input type="range" min="1961" max="2024" step="1" value="1961" id="yearSlider" />
+            <span id="yearLabel">1961</span> -->
+            <br>
+            <div id="temp_tooltip" class="tooltip" style="display: none;"></div>
+            <svg id="temp_svg" width="960" height="600"></svg>
+            <br>
+            <p>Over the past several decades, global temperatures have shown a consistent upward trend. In our visualization, this is clearly reflected in the intensifying red hues across the timeline—each shade representing a growing deviation from historical averages. As the world warms, regions once considered temperate are experiencing unprecedented heat, with annual temperature anomalies becoming the new norm. This warming trend not only signals the growing impact of climate change but also poses direct threats to agricultural productivity, especially in heat-sensitive crop zones.</p>
+            <br>
 
-        <h2>Use of Pesticides</h2>
-        <p>Pesticides play a dual role in agriculture—protecting crops from pests but potentially harming long-term soil health and ecosystems. Our visualization shows how pesticide usage has changed over time across regions and how it aligns with yield patterns. In some high-use countries, yields have stabilized, but others show diminishing returns, suggesting possible overuse or resistance. This calls for more balanced, targeted approaches to crop protection.</p>
-        <div id="vis2"></div>
-        <div id="slider_pest"></div>
-        <p>Globally, pesticide usage has remained relatively steady across most countries over the years, reflecting consistent agricultural practices and regulatory oversight. However, certain countries stand out as anomalies. Brazil, in particular, has shown a notable and sustained increase in pesticide application. This surge is largely driven by the expansion of industrial-scale agriculture—especially soybeans, sugarcane, and corn—often grown in monoculture systems that are highly dependent on chemical inputs for pest control. Brazil's rise in pesticide use also aligns with policy shifts that have approved more pesticides in recent years.</p>
-        <p>This trend raises environmental and public health concerns, especially regarding pesticide residues, biodiversity loss, and resistance buildup. In contrast, many other countries maintain stable or even declining usage due to integrated pest management and stricter environmental policies.</p>
-        <br>
+            <h2>Use of Pesticides</h2>
+            <p>Pesticides play a dual role in agriculture—protecting crops from pests but potentially harming long-term soil health and ecosystems. Our visualization shows how pesticide usage has changed over time across regions and how it aligns with yield patterns. In some high-use countries, yields have stabilized, but others show diminishing returns, suggesting possible overuse or resistance. This calls for more balanced, targeted approaches to crop protection.</p>
+            <p>The visualization below can be panned and zoomed to explore trends around the world. Click on any country to see a chart of its pesticide usage over time.</p>
+            <div id="vis2"></div>
+            <p>Globally, pesticide usage has remained relatively steady across most countries over the years, reflecting consistent agricultural practices and regulatory oversight. However, certain countries stand out as anomalies. Brazil, in particular, has shown a notable and sustained increase in pesticide application. This surge is largely driven by the expansion of industrial-scale agriculture—especially soybeans, sugarcane, and corn—often grown in monoculture systems that are highly dependent on chemical inputs for pest control. Brazil's rise in pesticide use also aligns with policy shifts that have approved more pesticides in recent years.</p>
+            <p>This trend raises environmental and public health concerns, especially regarding pesticide residues, biodiversity loss, and resistance buildup. In contrast, many other countries maintain stable or even declining usage due to integrated pest management and stricter environmental policies.</p>
+            <br>
 
-        <h2>Soil Nutrient Composition</h2>
-        <p>Fertile soil is the backbone of productive farming. By analyzing key nutrients—nitrogen, phosphorus, and potassium—we explore how soil balance influences yield outcomes. The data shows that while fertilizer application boosts yields, excessive or imbalanced use leads to nutrient runoff and declining effectiveness. Regions with optimized nutrient profiles tend to maintain more stable productivity over time, highlighting the value of precision agriculture and sustainable soil management.</p>
-        <label for="area-select">Select Area:</label>
-        <select id="area-select"></select>
-        <div id="vis3"></div>
-        <div id="nutrient_tooltip" class="tooltip" ></div>
-        <p>Soil nutrient levels are increasingly imbalanced across the globe. Regions like Asia and Latin America show nutrient surpluses due to heavy fertilizer use, risking runoff and soil degradation. In contrast, many Sub-Saharan African countries face deficits, where soils are overworked and undernourished, leading to reduced yields. These trends highlight the need for more balanced nutrient management to sustain long-term agricultural productivity without harming the environment.</p>
-        <br>
+            <h2>Soil Nutrient Composition</h2>
+            <p>Fertile soil is the backbone of productive farming. By analyzing key nutrients—nitrogen, phosphorus, and potassium—we explore how soil balance influences yield outcomes. The data shows that while fertilizer application boosts yields, excessive or imbalanced use leads to nutrient runoff and declining effectiveness. Regions with optimized nutrient profiles tend to maintain more stable productivity over time, highlighting the value of precision agriculture and sustainable soil management.</p>
+            <label for="area-select">Select Area:</label>
+            <select id="area-select"></select>
+            <div id="vis3"></div>
+            <div id="nutrient_tooltip" class="tooltip" ></div>
+            <p>Soil nutrient levels are increasingly imbalanced across the globe. Regions like Asia and Latin America show nutrient surpluses due to heavy fertilizer use, risking runoff and soil degradation. In contrast, many Sub-Saharan African countries face deficits, where soils are overworked and undernourished, leading to reduced yields. These trends highlight the need for more balanced nutrient management to sustain long-term agricultural productivity without harming the environment.</p>
+            <br>
 
-        <h2>Overall Crop Yield</h2>
-        <p>This interactive global map presents a spatial overview of crop yield performance over time. Users can explore country-level trends, compare different crops, and correlate yield patterns with climate and input variables. It reveals striking disparities: while some regions have seen steady improvements, others face stagnation or decline. The map serves as a powerful tool to identify both opportunity areas and regions at risk.</p>
-        <!-- <div id="vis4"></div> -->
-        <label for="crop">Crop:</label>
-        <select id="crop"></select>
-        <br>
-        <label for="year">Year:</label>
-        <input type="range" min="1961" max="2024" step="1" value="1961" id="year" />
-        <span id="year-label">1961</span>
+            <h2>Overall Crop Yield</h2>
+            <p>This interactive global map presents a spatial overview of crop yield performance over time. Users can explore country-level trends, compare different crops, and correlate yield patterns with climate and input variables. It reveals striking disparities: while some regions have seen steady improvements, others face stagnation or decline. The map serves as a powerful tool to identify both opportunity areas and regions at risk.</p>
+            <!-- <div id="vis4"></div> -->
+            <label for="crop">Crop:</label>
+            <select id="crop"></select>
+            <br>
+            <!-- <label for="year">Year:</label>
+            <input type="range" min="1961" max="2024" step="1" value="1961" id="year" />
+            <span id="year-label">1961</span> -->
 
-        <div id="crop_tooltip" class="tooltip" style="display: none;"></div>
-        <svg id="crop_map" width = "960" height = "600"></svg>
+            <div id="crop_tooltip" class="tooltip" style="display: none;"></div>
+            <div id="crop_map"></div>
+        </div>
     </div>
 
     <!-- Load D3.js -->

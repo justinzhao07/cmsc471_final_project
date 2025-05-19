@@ -1,17 +1,33 @@
 (() => {
 const width = 960, height = 600;
 const svg = d3.select("#crop_map").append("svg")
-                .attr("width", width).attr("height", height);
+                .attr("width", width).attr("height", height)
+                .attr("style", "max-width: 100%; height: auto;")
+                .attr("viewBox", [-50, -50, width + 50, height + 50])
+const g = svg.append("g");
+const subchart = svg.append("g").style("pointer-events", "none").style("opacity", "0%")
+const zoom = d3.zoom()
+            .scaleExtent([0.5, 30])
+            .on("zoom", zoomed);
 const tooltip = d3.select("#crop_tooltip")
 
 const projection = d3.geoNaturalEarth1().scale(160).translate([width / 2, height / 2]);
 const path = d3.geoPath().projection(projection);
 
+let currentYear = 1990;
+let subcharted = false;
+
 let cropData, world;
+
+function zoomed(event) {
+  const {transform} = event;
+  g.attr("transform", transform);
+  g.attr("stroke-width", 1 / transform.k);
+}
 
 // Load data
 Promise.all([
-    d3.json("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson"),
+    d3.json("pesticide/data/world.geojson"),
     d3.csv("crop_map/data.csv", d => ({
         area: d.area,
         item: d.item,
@@ -44,17 +60,34 @@ Promise.all([
         .attr("value", d => d);
     
     cropSelect.on("change", updateMap);
-    d3.select("#year").on("input", function () {
-    d3.select("#year-label").text(this.value);
-    updateMap();
-    });
+    // d3.select("#year").on("input", function () {
+    //   d3.select("#year-label").text(this.value);
+    //   updateMap();
+    // });
 
-    updateMap(1961);
+    updateMap();
+    window.addEventListener("yearUpdate", function(e) {
+      currentYear = e.detail;
+      updateMap(e.detail);
+    })
 });
+
+function updateSubchart() {
+  
+  subchart.append("rect")
+        .attr("x", (width / 10))
+        .attr("y", height / 20)
+        .attr("width", width * 0.8)
+        .attr("height", height * 0.8)
+        .attr("fill", "#cccccc")
+        .attr("stroke", "black")
+        .attr("opacity", "70%")
+  
+}
 
 function updateMap() {
     const selectedCrop = d3.select("#crop").property("value");
-    const selectedYear = +d3.select("#year").property("value");
+    const selectedYear = currentYear
 
     const filtered = cropData.filter(d => d.item === selectedCrop && d.year === selectedYear);
     const productionMap = new Map(filtered.map(d => [d.area, +d.production]));
@@ -70,9 +103,12 @@ function updateMap() {
                     .domain([Math.log10(minProduction || 1), Math.log10(maxProduction || 10)])
                     .interpolator(d3.interpolateYlGnBu);
 
-    svg.selectAll("path").remove();
+    svg.call(zoom)
+    svg.on("click", reset);
 
-    svg.selectAll("path")
+    g.selectAll("path").remove();
+
+    countries = g.selectAll("path")
     .data(world.features)
     .join("path")
     .attr("d", path)
@@ -82,16 +118,53 @@ function updateMap() {
     })
     .attr("stroke", "#444")
     .on("mouseover", function (event, d) {
+      if (!subcharted) {
         const prod = productionMap.get(d.properties.name);
         const formatted = prod != null ? d3.format(".2s")(prod) : "N/A";
         tooltip.style("display", "block")
         .html(`<strong>${d.properties.name}</strong><br/>Production: ${formatted}`);
+      }
     })
     .on("mousemove", event => {
         tooltip.style("left", (event.pageX + 10) + "px")
                 .style("top", (event.pageY - 20) + "px");
     })
-    .on("mouseout", () => tooltip.style("display", "none"));
+    .on("mouseout", () => tooltip.style("display", "none"))
+    .on("click", clicked);
+
+    function clicked(event, d) {
+        const [[x0, y0], [x1, y1]] = path.bounds(d);
+        event.stopPropagation();
+        // subchart.style("opacity", "0%")
+        countries.transition().style("stroke-width", "0.1px");
+        //svg.selectAll(".subchart_line").remove()
+        d3.select(this).transition().style("stroke-width", "1.5px").style("stroke", "red");
+        svg.transition().duration(750).call(
+            zoom.transform,
+            d3.zoomIdentity
+            .translate(width / 2, height / 2)
+            .scale(Math.min(20, 0.9 / Math.max((x1 - x0) / width, (y1 - y0) / height)))
+            .translate(-(x0 + x1) / 2, -(y0 + y1) / 2),
+            d3.pointer(event, svg.node())
+        );
+        //subchart_title.text(`Pesticide Usage over Time for ${d3.select(this).attr("country")}`)
+        //subchart.transition().delay(750).duration(750).style("opacity", "100%")
+        //makeSubchart(d3.select(this).attr("country"))
+    }
+
+    function reset() {
+        console.log("SVG click")
+        countries.transition().style("stroke-width", "0.1px");
+        svg.transition().duration(750).call(
+            zoom.transform,
+            d3.zoomIdentity,
+            d3.zoomTransform(svg.node()).invert([width / 2, height / 2]),
+        );
+        //subchart.transition().duration(750).style("opacity", "0%")
+    }
+
+    updateSubchart();
+
 
     svg.selectAll(".legend").remove();
 

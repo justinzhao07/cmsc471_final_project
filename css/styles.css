@@ -17,7 +17,7 @@ label {
 
 /* Container styling for layout */
 .container {
-    max-width: 1200px;
+    /* max-width: 1440px;*/
     margin: 2rem auto;
     padding: 2rem auto;
     font-family: Arial, sans-serif;
@@ -86,4 +86,27 @@ button:hover {
     border-radius: 4px;
     pointer-events: none; /* Prevent tooltip from interfering with mouse events */
     font-size: 12px;
+}
+
+#layout {
+    display: flex;
+}
+
+#slider-container {
+    width: 120px;
+    margin-right: 40px;
+    margin-left: -40px;
+    position: relative;
+    top: 400px;
+}
+
+#master_slider {
+    position: sticky;
+    top: 20px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    z-index: 1000;
 }

@@ -1,13 +1,14 @@
+let curHasData = false;
+let currentYear = 1990;
+
 function createVis(world, master_data) {
     const width = 975;
     const height = 610;
 
-    let currentYear = 2002
-
     let countries;
 
     const zoom = d3.zoom()
-            .scaleExtent([0, 30])
+            .scaleExtent([0.5, 30])
             .on("zoom", zoomed);
 
     const svg = d3.select("#vis2").append("svg")
@@ -18,7 +19,7 @@ function createVis(world, master_data) {
         .on("click", reset);
 
     const highest_pest = d3.extent(master_data, d => +d.pesticides_per_cropland)
-    console.log(highest_pest)
+    // console.log(highest_pest)
 
     const year_extent = d3.extent(master_data, d => +d.year)
 
@@ -78,15 +79,15 @@ function createVis(world, master_data) {
         .attr("stroke", "black")
         .attr("opacity", "70%")
     
-    subchart_xScale = d3.scaleLinear()
+    let subchart_xScale = d3.scaleLinear()
         .domain(year_extent)
         .range([width / 5, width * 0.8])
-    subchart_xAxis = d3.axisBottom(subchart_xScale).tickFormat(d => d.toString());
+    let subchart_xAxis = d3.axisBottom(subchart_xScale).tickFormat(d => d.toString());
 
-    subchart_yScale = d3.scaleLinear()
+    let subchart_yScale = d3.scaleLinear()
         .domain([highest_pest[1], highest_pest[0]])
         .range([height * 0.15, height * 0.7])
-    subchart_yAxis = d3.axisLeft(subchart_yScale)
+    let subchart_yAxis = d3.axisLeft(subchart_yScale)
 
     // X-axis
     subchart.append("g")
@@ -119,7 +120,7 @@ function createVis(world, master_data) {
         .text("Pesticide Usage per Unit of Cropland") // Displays the current y-axis variable
         .attr('class', 'labels')
     
-    subchart_title = subchart.append("text")
+    let subchart_title = subchart.append("text")
         .attr("text-anchor", "middle")
         .attr("x", width / 2)
         .attr("y", height * 0.12)
@@ -132,23 +133,25 @@ function createVis(world, master_data) {
         .x(d => subchart_xScale(d.year))
         .y(d => subchart_yScale(d.pesticides_per_cropland))
 
-    function updateHighlightBar() {
+    function updateHighlightBar(hasData, year) {
 
         svg.selectAll(".highlight_bar").remove()
         
-        subchart.append("rect")
-            .attr("class", "highlight_bar")
-            .style("opacity", "50%")
-            .attr("fill", "yellow")
-            .attr("y", height * 0.15)
-            .attr("x", subchart_xScale(currentYear - 0.5))
-            .attr("height", (height * 0.7) - (height * 0.15))
-            .attr("width", subchart_xScale(currentYear + 0.5) - subchart_xScale(currentYear - 0.5))
+        if (hasData) {
+            subchart.append("rect")
+                .attr("class", "highlight_bar")
+                .style("opacity", "50%")
+                .attr("fill", "yellow")
+                .attr("y", height * 0.15)
+                .attr("x", subchart_xScale(year - 0.5))
+                .attr("height", (height * 0.7) - (height * 0.15))
+                .attr("width", subchart_xScale(currentYear + 0.5) - subchart_xScale(currentYear - 0.5))
+        }
     }
 
-    function updateCountries() {
+    function updateCountries(year) {
 
-        filtered_data = master_data.filter(row => row.year == currentYear)
+        filtered_data = master_data.filter(row => row.year == year)
     
         const csvLookup = new Map();
         filtered_data.forEach(row => {
@@ -170,16 +173,22 @@ function createVis(world, master_data) {
             .attr("stroke-width", "0.1px")
             .on("click", clicked);
         
-        updateHighlightBar()
+        updateHighlightBar(curHasData, year)
     
     }
 
-    updateCountries()
+    updateCountries(currentYear)
+    window.addEventListener("yearUpdate", e => {
+        currentYear = e.detail;
+        updateCountries(e.detail);
+    })
 
     function makeSubchart(country) {
         let country_data = master_data.filter(d => d.country == country)
 
         if (country_data.length === 0) {
+            curHasData = false;
+
             subchart.append("text")
                 .text("No Data")
                 .attr("fill", "#444444")
@@ -190,7 +199,11 @@ function createVis(world, master_data) {
                 .attr("y", height * 0.45)
                 .attr("class", "subchart_line")
 
+            updateHighlightBar(false, currentYear)
+
         } else {
+            curHasData = true;
+
             subchart.append("path")
                 .datum(country_data)
                 .attr("fill", "none")
@@ -198,30 +211,60 @@ function createVis(world, master_data) {
                 .attr("stroke-width", "2px")
                 .attr("d", subchart_line)
                 .attr("class", "subchart_line")
+            
+            subchart.raise()
+            
+            updateHighlightBar(true, currentYear)
         }
+
     }
 
-    let slider = d3
-        .sliderHorizontal()
-        .min(d3.min(master_data.map(d => +d.year))) // setup the range
-        .max(d3.max(master_data.map(d => +d.year))) // setup the range
-        .step(1)
-        .width(width)  // Widen the slider if needed
-        .tickFormat(d3.format('d'))
-        .displayValue(false)
-        .default(currentYear)
-        .on('onchange', (val) => {
-            currentYear = +val // Update the year
-            updateCountries() // Refresh the chart
-        });
+    const legendWidth = 200;
+    const legendHeight = 10;
 
-        d3.select('#slider_pest')
-        .append('svg')
-        .attr('width', width + 100)  // Adjust width if needed
-        .attr('height', 100)
-        .append('g')
-        .attr('transform', 'translate(30,30)')
-        .call(slider);
+    const defs = svg.append("defs");
+
+    const gradient = defs.append("linearGradient")
+        .attr("id", "pest-legend-gradient")
+        .attr("x1", "0%")
+        .attr("x2", "100%");
+
+    gradient.selectAll("stop")
+        .data([
+        { offset: "0%", color: color(0) },
+        { offset: "50%", color: color(highest_pest[1] / 2) },
+        { offset: "100%", color: color(highest_pest[1]) }
+        ])
+        .enter()
+        .append("stop")
+        .attr("offset", d => d.offset)
+        .attr("stop-color", d => d.color);
+
+    const legend = svg.append("g")
+        .attr("class", "legend")
+        .attr("transform", `translate(0, ${height - 50})`);
+    
+    legend.append("text")
+        .text("Pesticides per Unit of Cropland")
+        .attr("transform", "translate(0, -5)")
+
+    legend.append("rect")
+        .attr("width", legendWidth)
+        .attr("height", legendHeight)
+        .style("fill", "url(#pest-legend-gradient)")
+        .style("stroke", "#000");
+
+    const legendScale = d3.scaleLinear()
+        .domain([0, highest_pest[1]])
+        .range([0, legendWidth]);
+
+    const legendAxis = d3.axisBottom(legendScale)
+        .ticks(3)
+        .tickFormat(d => `${d}`);
+
+    legend.append("g")
+        .attr("transform", `translate(0, ${legendHeight})`)
+        .call(legendAxis);
 
 }
 

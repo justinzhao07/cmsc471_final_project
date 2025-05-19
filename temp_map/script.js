@@ -1,6 +1,6 @@
 const svg = d3.select("#temp_svg");
 const tooltip = d3.select("#temp_tooltip");
-const yearLabel = d3.select("#yearLabel");
+// const yearLabel = d3.select("#yearLabel");
 
 const projection = d3.geoNaturalEarth1();
 const path = d3.geoPath().projection(projection);
@@ -8,7 +8,7 @@ const color = d3.scaleSequential(d3.interpolateRdBu).domain([3, -3]);
 
 // Load GeoJSON and temperature data
 Promise.all([
-  d3.json("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson"),
+  d3.json("pesticide/data/world.geojson"),
   d3.json("temp_map/temp_change_by_country.json")
   // d3.json("temp_change_by_country.json")
 ]).then(([world, tempData]) => {
@@ -82,12 +82,17 @@ Promise.all([
   }
 
   // Initial render
-  updateMap(1961);
+  updateMap(1990);
 
   // Update on slider change
-  d3.select("#yearSlider").on("input", function () {
-    const year = this.value;
-    yearLabel.text(year);
+  // d3.select("#yearSlider").on("input", function () {
+  //   const year = this.value;
+  //   yearLabel.text(year);
+  //   updateMap(year);
+  // });
+  window.addEventListener("yearUpdate", function(e) {
+    const year = e.detail;
+    // yearLabel.text(year)
     updateMap(year);
   });
 });
